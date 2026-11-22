@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b18">
+<title>NEXA AI LAB</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080b18;color:#f4f6ff;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ min-height:100vh
+}
+body:before{
+ content:"";position:fixed;inset:0;pointer-events:none;
+ background:radial-gradient(ellipse at 15% 0%,#373b8b55,transparent 42%),
+ radial-gradient(ellipse at 90% 45%,#542c7950,transparent 40%)
+}
+main{position:relative;max-width:950px;margin:auto;padding:25px 17px 60px}
+header{display:flex;align-items:center;gap:13px;margin-bottom:28px}
+.logo{
+ width:49px;height:49px;border-radius:16px;
+ display:grid;place-items:center;font-size:24px;font-weight:900;
+ color:white;background:linear-gradient(135deg,#667cff,#bd72ff);
+ box-shadow:0 0 30px #887aff55
+}
+.brand small{color:#9ba8ff;letter-spacing:3px;font-weight:800}
+h1{font-size:23px;margin:3px 0}
+.muted{color:#8994b2;font-size:13px}
+.hero{
+ padding:25px 20px;border:1px solid #333d68;border-radius:23px;
+ background:linear-gradient(125deg,#202b50dd,#17172ddd);
+ margin-bottom:18px
+}
+.tag{font-size:11px;letter-spacing:2px;color:#a9b4ff;font-weight:800}
+.hero h2{font-size:28px;line-height:1.2;margin:12px 0}
+.hero p{color:#aab4cf;line-height:1.6;font-size:14px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.pill{font-size:11px;padding:7px 11px;border:1px solid #46527b;border-radius:30px;color:#c7ceff}
+.panel{
+ border:1px solid #293451;background:#11182bdf;
+ border-radius:20px;padding:19px;margin-top:15px
+}
+.panel h3{font-size:16px;margin:0 0 5px}
+label{display:block;font-size:13px;font-weight:700;margin:18px 0 9px}
+select,input,textarea{
+ width:100%;border:1px solid #344261;border-radius:12px;
+ padding:14px;background:#0a1020;color:white;font:inherit;
+ outline:none
+}
+select:focus,input:focus,textarea:focus{border-color:#9b8cff}
+textarea{min-height:130px;resize:vertical;line-height:1.55}
+button{
+ width:100%;border:0;border-radius:13px;padding:15px;
+ margin-top:18px;background:linear-gradient(100deg,#718cff,#b37aff);
+ color:#080b18;font-size:15px;font-weight:850
+}
+button:disabled{opacity:.55}
+.status{display:flex;align-items:center;gap:9px;color:#aeb9d4;font-size:12px}
+.dot{width:9px;height:9px;border-radius:50%;background:#e5b85c}
+.dot.ok{background:#50e2ad;box-shadow:0 0 12px #50e2ad}
+.agents{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.agent{padding:12px 8px;border:1px solid #303b5a;border-radius:12px;background:#151e34;text-align:center}
+.agent b{display:block;font-size:12px;margin-top:6px}
+.agent span{font-size:19px}
+.output{white-space:pre-wrap;line-height:1.7;font-size:14px;overflow-wrap:anywhere}
+.error{color:#ff9b9b}
+.foot{text-align:center;color:#66718f;font-size:11px;margin-top:30px}
+@media(min-width:650px){main{padding-top:40px}.hero{padding:35px}.hero h2{font-size:36px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div class="logo">N</div>
+ <div class="brand">
+  <small>INTELLIGENCE SYSTEM</small>
+  <h1>NEXA AI LAB</h1>
+  <div class="muted">Your personal AI workforce</div>
+ </div>
+</header>
+
+<section class="hero">
+ <div class="tag">WELCOME TO NEXA</div>
+ <h2>One mission.<br>Nine intelligent minds.</h2>
+ <p>Trung tâm điều hành đội ngũ AI. Chọn chuyên gia, giao nhiệm vụ và nhận kết quả trực tiếp từ Gemini.</p>
+ <div class="pills">
+  <span class="pill">✦ 9 AI AGENTS</span>
+  <span class="pill">✦ GEMINI 2.5 FLASH</span>
+  <span class="pill">✦ MOBILE READY</span>
+ </div>
+</section>
+
+<section class="panel">
+ <div class="status"><span class="dot" id="dot"></span><span id="status">Đang kiểm tra hệ thống...</span></div>
+ <div class="agents">
+  <div class="agent"><span>🧠</span><b>CEO</b></div>
+  <div class="agent"><span>🔎</span><b>Research</b></div>
+  <div class="agent"><span>♟️</span><b>Strategy</b></div>
+  <div class="agent"><span>📦</span><b>Product</b></div>
+  <div class="agent"><span>🎨</span><b>Designer</b></div>
+  <div class="agent"><span>💻</span><b>Developer</b></div>
+  <div class="agent"><span>🧪</span><b>QA Tester</b></div>
+  <div class="agent"><span>📣</span><b>Marketing</b></div>
+  <div class="agent"><span>📊</span><b>Finance</b></div>
+ </div>
+</section>
+
+<section class="panel">
+ <h3>⚡ Mission Control</h3>
+ <div class="muted">Giao nhiệm vụ cho chuyên gia AI</div>
+
+ <label for="role">CHỌN CHUYÊN GIA</label>
+ <select id="role">
+  <option value="ceo">🧠 CEO Orchestrator</option>
+  <option value="researcher">🔎 Market Researcher</option>
+  <option value="strategist">♟️ Idea Strategist</option>
+  <option value="product">📦 Product Manager</option>
+  <option value="designer">🎨 Designer</option>
+  <option value="developer">💻 Developer</option>
+  <option value="qa">🧪 QA Tester</option>
+  <option value="marketing">📣 Marketing Strategist</option>
+  <option value="finance">📊 Finance Analyst</option>
+ </select>
+
+ <label for="gate">MÃ TRUY CẬP NEXA</label>
+ <input id="gate" type="password" autocomplete="off" placeholder="Nhập NEXA_GATE_CODE">
+
+ <label for="task">NHIỆM VỤ CỦA BẠN</label>
+ <textarea id="task" placeholder="Mô tả nhiệm vụ bạn muốn đội ngũ AI thực hiện..."></textarea>
+
+ <button id="run">✦ EXECUTE MISSION</button>
+ <p class="muted">API key Gemini được giữ ở máy chủ Cloudflare. Không nhập API key vào đây.</p>
+</section>
+
+<section class="panel" id="resultCard" hidden>
+ <h3 id="resultTitle">MISSION RESULT</h3>
+ <p class="muted">Phản hồi từ AI</p>
+ <div class="output" id="output"></div>
+</section>
+
+<div class="foot">NEXA AI LAB · BUILT FOR THE FUTURE</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+
+async function checkHealth(){
+ try{
+  const r=await fetch('https://nexa-ai-lab.hiepm4014.workers.dev/health');
+  const d=await r.json();
+  if(r.ok&&d.status==='key_configured'){
+   $('dot').className='dot ok';
+   $('status').textContent='SYSTEM ONLINE · '+d.model;
+  }else{
+   $('status').textContent='Gemini API chưa được cấu hình';
+  }
+ }catch(e){
+  $('status').textContent='Không kết nối được máy chủ';
+ }
+}
+
+$('run').onclick=async()=>{
+ const code=$('gate').value.trim();
+ const task=$('task').value.trim();
+ if(!code||!task){
+  $('resultCard').hidden=false;
+  $('resultTitle').textContent='THIẾU THÔNG TIN';
+  $('output').textContent='Hãy nhập mã truy cập và nhiệm vụ.';
+  return;
+ }
+
+ const btn=$('run');
+ btn.disabled=true;
+ btn.textContent='⏳ PROCESSING...';
+ $('resultCard').hidden=false;
+ $('resultTitle').textContent='MISSION IN PROGRESS';
+ $('output').textContent='Đang gửi nhiệm vụ đến Gemini...';
+
+ try{
+  const r=await fetch('https://nexa-ai-lab.hiepm4014.workers.dev/api/agent',{
+   method:'POST',
+   headers:{
+    'Content-Type':'application/json',
+    'X-NEXA-CODE':code
+   },
+   body:JSON.stringify({role:$('role').value,task})
+  });
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||'Yêu cầu thất bại');
+  $('resultTitle').textContent='✦ '+d.agent+' · '+d.model;
+  $('output').textContent=d.output||'Không có nội dung trả về.';
+ }catch(e){
+  $('resultTitle').textContent='MISSION ERROR';
+  $('output').textContent=e.message;
+  $('output').className='output error';
+ }finally{
+  btn.disabled=false;
+  btn.textContent='✦ EXECUTE MISSION';
+ }
+};
+
+checkHealth();
+</script>
+</body>
+</html>
