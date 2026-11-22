@@ -256,8 +256,41 @@ const $=id=>document.getElementById(id);
 const API="https://nexa-ai-lab.hiepm4014.workers.dev";
 let history=[];
 let conversations=[];
+let activeTitle=null;
 let busy=false;
 
+const STORAGE_KEY="nexa_conversations_v1";
+
+function saveConversations(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(conversations));
+}
+
+function loadConversations(){
+  try{
+    conversations=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+  }catch(e){
+    conversations=[];
+  }
+  renderHistoryList();
+}
+
+function renderHistoryList(){
+  const list=$("historyList");
+  list.innerHTML="";
+  if(!conversations.length){
+    list.className="history-empty";
+    list.textContent="Chưa có cuộc trò chuyện";
+    return;
+  }
+  list.className="";
+  conversations.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="nav-item";
+    b.textContent="◦ "+c.title.slice(0,28);
+    b.onclick=()=>restoreConversation(c.title);
+    list.appendChild(b);
+  });
+}
 function scrollBottom(){
  $("chat").scrollTop=$("chat").scrollHeight;
 }
