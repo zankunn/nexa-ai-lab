@@ -1,430 +1,171 @@
 
-const $ = id => document.getElementById(id);
-const API = "https://nexa-ai-lab.hiepm4014.workers.dev";
-const STORAGE_KEY = "nexa_conversations_v1";
-const MAX_CHATS = 50;
-
-let history = [];
-let conversations = [];
-let activeId = null;
-let busy = false;
-
-// Tạo ID riêng cho từng cuộc trò chuyện
-function makeId() {
-  return "nexa-" + Date.now() + "-" +
-    Math.random().toString(36).slice(2, 9);
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090914">
+<title>NEXA AI LAB</title>
+<style>
+:root{color-scheme:dark;--bg:#090914;--panel:#111120;--line:#292941;--text:#f4f2ff;--muted:#9696b4;--violet:#9b7cff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 15% 0%,#4c3c9250,transparent 42%),#090914;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;color:inherit}
+.app{display:grid;grid-template-columns:270px minmax(0,1fr);height:100dvh}
+.sidebar{background:#0d0d19;border-right:1px solid var(--line);padding:20px 15px;display:flex;flex-direction:column;min-height:0;z-index:5}
+.brand{display:flex;align-items:center;gap:12px;padding:5px 7px 23px}
+.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:22px;font-weight:900;background:linear-gradient(140deg,#7867ff,#d16cff);box-shadow:0 0 28px #9b7cff55}
+.brand-name{font-size:15px;font-weight:850;letter-spacing:1.5px}
+.brand-sub{font-size:9px;color:#aaa3d0;letter-spacing:2px;margin-top:4px}
+.new-chat{width:100%;border:1px solid #574b83;background:linear-gradient(110deg,#292047,#1c1b31);border-radius:12px;padding:12px;text-align:left;font-weight:700;font-size:13px}
+.side-label{font-size:9px;color:#777793;letter-spacing:2px;font-weight:800;margin:24px 9px 10px}
+.agent-list{display:grid;gap:5px}
+.agent{width:100%;display:flex;align-items:center;gap:10px;padding:9px;border:1px solid transparent;background:transparent;border-radius:10px;text-align:left;color:#c7c5da;font-size:12px}
+.agent:hover,.agent.active{background:#211d35;border-color:#453965;color:white}
+.agent-ico{width:27px;height:27px;border-radius:9px;background:#25223b;display:grid;place-items:center}
+.agent small{display:block;color:#85839f;font-size:10px;margin-top:3px}
+.history-wrap{min-height:0;display:flex;flex-direction:column;flex:1}
+.history-list{overflow:auto;display:grid;gap:4px}
+.history-empty{font-size:11px;color:#777793;padding:10px}
+.history-item{padding:9px 10px;border:0;background:transparent;border-radius:8px;text-align:left;color:#aaa8c0;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item.active,.history-item:hover{background:#1b1a2b;color:#fff}
+.sidebar-foot{border-top:1px solid var(--line);padding:15px 5px 2px}
+.connection{display:flex;align-items:center;gap:9px;font-size:11px;color:#aaa8c0}
+.dot{width:8px;height:8px;border-radius:50%;background:#d4a64e}
+.dot.ok{background:#53e0b2;box-shadow:0 0 12px #53e0b288}
+.foot-note{font-size:9px;color:#6f6d86;margin:9px 0 0 17px}
+.main{min-width:0;display:flex;flex-direction:column;min-height:0}
+.topbar{height:62px;flex-shrink:0;border-bottom:1px solid #24243a;display:flex;align-items:center;justify-content:space-between;padding:0 25px;background:#0d0d19}
+.top-left{display:flex;align-items:center;gap:12px}
+.mobile-menu{display:none;border:1px solid var(--line);background:#171728;border-radius:9px;padding:8px}
+.crumb{font-size:12px;color:#a5a2bb}
+.crumb b{color:white}
+.model-chip{border:1px solid #34304c;background:#171629;border-radius:30px;padding:7px 11px;color:#c4b8ee;font-size:10px}
+.workspace{width:min(900px,100%);margin:auto;display:flex;flex-direction:column;flex:1;min-height:0;padding:0 25px}
+.chat{flex:1;min-height:0;overflow:auto;padding:25px 0 20px}
+.welcome{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 0 35px}
+.orb{width:68px;height:68px;border-radius:23px;display:grid;place-items:center;font-size:30px;background:linear-gradient(145deg,#5c50b8,#b15ad1);box-shadow:0 0 65px #9166ff55;margin-bottom:23px}
+.eyebrow{font-size:10px;letter-spacing:3px;color:#a99be5;font-weight:800}
+.welcome h1{font-size:clamp(27px,5vw,43px);line-height:1.12;margin:13px 0}
+.gradient{background:linear-gradient(90deg,#a89aff,#e29bff,#75d9eb);background-clip:text;-webkit-background-clip:text;color:transparent}
+.welcome p{max-width:470px;color:#9997b3;font-size:13px;line-height:1.7}
+.suggestions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;width:min(540px,100%);margin-top:20px}
+.suggestion{background:#141425;border:1px solid #302d49;border-radius:12px;padding:13px;text-align:left;color:#c9c5df;font-size:11px}
+.suggestion:hover{border-color:#8270c4}
+.message{display:flex;gap:12px;margin:0 0 24px;align-items:flex-start}
+.message.user{flex-direction:row-reverse}
+.avatar{width:31px;height:31px;flex:0 0 31px;border-radius:11px;display:grid;place-items:center;background:#25203e;color:#d6c5ff;font-size:13px}
+.message.user .avatar{background:#1c3540;color:#8fe5ec}
+.message-body{max-width:min(760px,calc(100% - 45px));min-width:0}
+.message-head{font-size:10px;color:#aaa4c7;margin:2px 0 7px}
+.message.user .message-head{text-align:right}
+.bubble{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.75;color:#e4e1f1;background:#151526;border:1px solid #29283e;border-radius:4px 14px 14px 14px;padding:12px 15px}
+.message.user .bubble{background:#25203b;border-color:#40345f;border-radius:14px 4px 14px 14px}
+.composer-area{padding:12px 0 max(18px,env(safe-area-inset-bottom));border-top:1px solid #222238}
+.role-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.role-label{font-size:9px;letter-spacing:1.5px;color:#777590;font-weight:800}
+.role-select{max-width:245px;border:1px solid #39344f;background:#151425;color:#d6ceef;border-radius:9px;padding:8px 10px;font-size:11px}
+.composer{background:#151525;border:1px solid #38334f;border-radius:16px;padding:12px}
+.composer:focus-within{border-color:#8871d0}
+.prompt{display:block;width:100%;min-height:52px;max-height:150px;resize:none;border:0;outline:0;background:transparent;color:#f3f0ff;font-size:13px;line-height:1.6}
+.prompt::placeholder{color:#77758f}
+.composer-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hint{font-size:9px;color:#73718a}
+.send{border:0;border-radius:10px;padding:9px 15px;background:linear-gradient(110deg,#8b7aff,#c477e6);color:#110e20;font-weight:850;font-size:11px}
+.send:disabled{opacity:.5}
+.gate-row{display:flex;gap:8px;align-items:center;margin-top:9px}
+.gate{width:100%;border:1px solid #29283e;border-radius:9px;background:#10101e;padding:9px 11px;color:#d9d5e9;font-size:10px;outline:none}
+.gate-note{font-size:9px;color:#6d6b84;white-space:nowrap}
+.overlay{display:none}
+@media(max-width:760px){
+.app{grid-template-columns:1fr}
+.sidebar{position:fixed;inset:0 auto 0 0;width:min(300px,85vw);transform:translateX(-105%);transition:transform .25s;box-shadow:20px 0 60px #0008}
+.sidebar-open .sidebar{transform:translateX(0)}
+.overlay{display:none;position:fixed;inset:0;background:#0009;z-index:4}
+.sidebar-open .overlay{display:block}
+.mobile-menu{display:block}
+.topbar{height:58px;padding:0 14px}
+.workspace{padding:0 14px}
+.chat{padding-top:18px}
+.welcome h1{font-size:30px}
+.suggestions{grid-template-columns:1fr}
+.gate-note{display:none}
 }
-
-// Lưu lịch sử vào trình duyệt
-function saveConversations() {
-  try {
-    conversations.sort(
-      (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
-    );
-
-    conversations = conversations.slice(0, MAX_CHATS);
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(conversations)
-    );
-
-    renderHistoryList();
-    return true;
-  } catch (error) {
-    $("status").textContent = "LỖI LƯU LỊCH SỬ";
-    return false;
-  }
-}
-
-// Tải lịch sử đã lưu
-function loadConversations() {
-  try {
-    const saved = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || "[]"
-    );
-
-    conversations = Array.isArray(saved)
-      ? saved
-          .filter(c => c && Array.isArray(c.messages))
-          .map(c => ({
-            id: c.id || makeId(),
-            title: c.title || "Cuộc trò chuyện",
-            messages: c.messages,
-            role: c.role || "ceo",
-            updatedAt: c.updatedAt || Date.now()
-          }))
-      : [];
-
-    saveConversations();
-  } catch (error) {
-    conversations = [];
-    renderHistoryList();
-  }
-}
-
-// Hiển thị danh sách lịch sử
-function renderHistoryList() {
-  const list = $("historyList");
-  list.innerHTML = "";
-
-  if (!conversations.length) {
-    list.className = "history-empty";
-    list.textContent = "Chưa có cuộc trò chuyện";
-    return;
-  }
-
-  list.className = "";
-
-  conversations.forEach(c => {
-    const button = document.createElement("button");
-
-    button.className = "nav-item" +
-      (c.id === activeId ? " active" : "");
-
-    button.textContent = "◦ " + c.title.slice(0, 28);
-    button.onclick = () => restoreConversation(c.id);
-
-    list.appendChild(button);
-  });
-}
-
-function getActiveConversation() {
-  return conversations.find(c => c.id === activeId);
-}
-
-// Đồng bộ hội thoại hiện tại vào bộ nhớ
-function updateActiveConversation() {
-  const conversation = getActiveConversation();
-  if (!conversation) return;
-
-  conversation.messages = history.slice();
-  conversation.updatedAt = Date.now();
-
-  saveConversations();
-}
-
-// Tạo cuộc trò chuyện mới
-function createConversation(message, role) {
-  const conversation = {
-    id: makeId(),
-    title: message.slice(0, 28),
-    messages: [],
-    role: role,
-    updatedAt: Date.now()
-  };
-
-  conversations.unshift(conversation);
-  activeId = conversation.id;
-
-  saveConversations();
-  return conversation;
-}
-
-function scrollBottom() {
-  $("chat").scrollTop = $("chat").scrollHeight;
-}
-
-// Hiển thị tin nhắn
-function addMessage(type, name, content) {
-  const wrap = document.createElement("div");
-  wrap.className = "message " + type;
-
-  const head = document.createElement("div");
-  head.className = "message-head";
-
-  const avatar = document.createElement("span");
-  avatar.className = "avatar";
-  avatar.textContent = type === "user" ? "U" : "✦";
-
-  const label = document.createElement("span");
-  label.textContent = name;
-
-  if (type === "user") {
-    head.append(label, avatar);
-  } else {
-    head.append(avatar, label);
-  }
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.textContent = content;
-
-  wrap.append(head, bubble);
-  $("chatInner").appendChild(wrap);
-
-  scrollBottom();
-  return bubble;
-}
-
-function clearWelcome() {
-  const welcome = $("welcome");
-  if (welcome) welcome.remove();
-}
-
-// Mở lại một cuộc trò chuyện cũ
-function restoreConversation(id) {
-  if (busy) return;
-
-  const conversation = conversations.find(c => c.id === id);
-  if (!conversation) return;
-
-  activeId = conversation.id;
-  history = conversation.messages.slice();
-
-  $("role").value = conversation.role || "ceo";
-  $("chatInner").innerHTML = "";
-
-  if (!history.length) {
-    showWelcome();
-  } else {
-    history.forEach(message => {
-      const isUser = message.role === "user";
-
-      addMessage(
-        isUser ? "user" : "ai",
-        isUser ? "BẠN" : (message.agentName || "NEXA"),
-        message.content
-      );
-    });
-  }
-
-  renderHistoryList();
-  document.body.classList.remove("sidebar-open");
-}
-
-// Màn hình chào
-function showWelcome() {
-  $("chatInner").innerHTML = `
-    <div class="welcome" id="welcome">
-      <div class="welcome-icon">✦</div>
-      <h1>Chào mừng đến <span class="gradient">NEXA AI</span></h1>
-      <p>Một không gian làm việc. Chín trí tuệ nhân tạo. Hãy bắt đầu bằng ý tưởng của bạn.</p>
-      <div class="suggestions">
-        <button class="suggestion">✧ Lên ý tưởng kinh doanh mới</button>
-        <button class="suggestion">⌘ Tạo một website chuyên nghiệp</button>
-        <button class="suggestion">✦ Nghiên cứu thị trường</button>
-        <button class="suggestion">◇ Xây dựng kế hoạch sản phẩm</button>
-      </div>
-    </div>`;
-
-  bindSuggestions();
-}
-
-function bindSuggestions() {
-  document.querySelectorAll(".suggestion").forEach(button => {
-    button.onclick = () => {
-      $("prompt").value = button.textContent
-        .replace(/^[^\wÀ-ỹ]+/, "")
-        .trim();
-
-      $("prompt").focus();
-    };
-  });
-}
-
-// Kiểm tra kết nối Gemini
-async function checkHealth() {
-  try {
-    const response = await fetch(API + "/health");
-    const data = await response.json();
-
-    if (response.ok && data.status === "key_configured") {
-      $("dot").className = "dot";
-      $("status").textContent =
-        "ONLINE · " + (data.model || "GEMINI");
-    } else {
-      $("status").textContent = "API NOT READY";
-    }
-  } catch (error) {
-    $("status").textContent = "SERVER OFFLINE";
-  }
-}
-
-// Gửi tin nhắn
-async function sendMessage() {
-  const message = $("prompt").value.trim();
-  const code = $("gate").value.trim();
-
-  if (busy || !message) return;
-
-  if (!code) {
-    alert("Hãy nhập mã truy cập NEXA.");
-    $("gate").focus();
-    return;
-  }
-
-  const role = $("role").value;
-  const roleName = $("role").selectedOptions[0].textContent;
-
-  clearWelcome();
-
-  let conversation = getActiveConversation();
-
-  if (!conversation) {
-    conversation = createConversation(message, role);
-  }
-
-  conversation.role = role;
-
-  // Lưu tin nhắn người dùng ngay lập tức
-  addMessage("user", "BẠN", message);
-
-  history.push({
-    role: "user",
-    content: message
-  });
-
-  updateActiveConversation();
-
-  $("prompt").value = "";
-  $("prompt").style.height = "auto";
-
-  busy = true;
-  $("send").disabled = true;
-
-  const loading = addMessage(
-    "ai",
-    roleName,
-    "Để tao suy nghĩ một chút nhé..."
-  );
-
-  try {
-    const conversationText = history
-      .slice(-16)
-      .map(item =>
-        (item.role === "user" ? "NGƯỜI DÙNG" : "NEXA")
-        + ": " + item.content
-      )
-      .join("\n\n");
-
-    // Chỉ dẫn giao tiếp tự nhiên hơn cho chatbot
-    const personality = `
-Bạn là ${roleName}, một thành viên trong đội ngũ NEXA AI LAB.
-
-PHONG CÁCH GIAO TIẾP:
-- Trò chuyện tự nhiên, thân thiện, linh hoạt như một người cộng sự.
-- Không trả lời cứng nhắc hoặc lặp đi lặp lại cùng một kiểu mở đầu.
-- Nếu người dùng nói chuyện thân mật, hãy đáp lại gần gũi và phù hợp.
-- Nếu người dùng dùng cách xưng hô mày-tao, có thể dùng cách xưng hô đó.
-- Không cần lúc nào cũng trình bày bằng tiêu đề và danh sách.
-- Câu hỏi đơn giản thì trả lời ngắn gọn, đi thẳng vào ý chính.
-- Việc phức tạp thì giải thích rõ ràng, chia thành từng bước.
-- Biết tiếp nối nội dung những lần trò chuyện trước.
-- Không hỏi lại những điều người dùng đã cung cấp.
-- Chỉ hỏi thêm khi thực sự thiếu thông tin quan trọng.
-- Chủ động đề xuất bước tiếp theo khi điều đó hữu ích.
-- Có thể dùng chút hài hước đúng lúc, nhưng không lạm dụng emoji.
-- Không tự nhận đã thực hiện một việc nếu thực tế chưa làm.
-- Nếu không biết, hãy nói rõ thay vì tự bịa thông tin.
-
-VAI TRÒ:
-Thực hiện đúng chuyên môn của ${roleName}, phối hợp tư duy với mục tiêu chung của NEXA AI LAB.
-
-LỊCH SỬ HỘI THOẠI:
-${conversationText}
-
-Hãy trả lời tin nhắn mới nhất một cách tự nhiên, hữu ích và đúng ngữ cảnh.
-`;
-
-    const response = await fetch(API + "/api/agent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-NEXA-CODE": code
-      },
-      body: JSON.stringify({
-        role: role,
-        task: personality
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || data.message || "HTTP " + response.status
-      );
-    }
-
-    const answer = data.output || "AI chưa trả về nội dung.";
-
-    loading.textContent = answer;
-
-    history.push({
-      role: "assistant",
-      content: answer,
-      agentName: roleName
-    });
-
-    // Lưu câu trả lời của AI ngay sau khi nhận được
-    updateActiveConversation();
-
-  } catch (error) {
-    loading.textContent =
-      "Tao chưa trả lời được vì kết nối gặp lỗi: " +
-      error.message +
-      ". Mày có thể thử gửi lại nhé.";
-
-    // Giữ lại tin nhắn người dùng để không mất nội dung
-    updateActiveConversation();
-
-  } finally {
-    busy = false;
-    $("send").disabled = false;
-    $("prompt").focus();
-    scrollBottom();
-  }
-}
-
-// Nút gửi
-$("send").onclick = sendMessage;
-
-// Enter để gửi, Shift + Enter để xuống dòng
-$("prompt").addEventListener("keydown", event => {
-  if (event.key === "Enter" && !event.shiftKey) {
-    event.preventDefault();
-    sendMessage();
-  }
-});
-
-// Tự điều chỉnh chiều cao ô nhập
-$("prompt").addEventListener("input", () => {
-  $("prompt").style.height = "auto";
-  $("prompt").style.height =
-    Math.min($("prompt").scrollHeight, 150) + "px";
-});
-
-// Bắt đầu cuộc trò chuyện mới, không xóa lịch sử cũ
-$("newChat").onclick = () => {
-  if (busy) return;
-
-  history = [];
-  activeId = null;
-
-  renderHistoryList();
-  showWelcome();
-
-  $("prompt").focus();
-  document.body.classList.remove("sidebar-open");
-};
-
-// Menu điện thoại
-$("menu").onclick = () => {
-  document.body.classList.toggle("sidebar-open");
-};
-
-$("overlay").onclick = () => {
-  document.body.classList.remove("sidebar-open");
-};
-
-$("focusRole").onclick = () => {
-  document.body.classList.remove("sidebar-open");
-  $("role").focus();
-};
-
-// Khởi động NEXA
-loadConversations();
-bindSuggestions();
-checkHealth();
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<aside class="sidebar">
+ <div class="brand"><div class="brand-mark">N</div><div><div class="brand-name">NEXA AI LAB</div><div class="brand-sub">INTELLIGENCE WORKSPACE</div></div></div>
+ <button class="new-chat" id="newChat">＋ Cuộc trò chuyện mới</button>
+ <div class="side-label">AI SPECIALISTS · 09</div>
+ <div class="agent-list">
+  <button class="agent active" data-role="ceo"><span class="agent-ico">🧠</span><span>CEO Orchestrator<small>Điều phối tổng thể</small></span></button>
+  <button class="agent" data-role="researcher"><span class="agent-ico">⌕</span><span>Market Researcher<small>Nghiên cứu thị trường</small></span></button>
+  <button class="agent" data-role="strategist"><span class="agent-ico">♟</span><span>Idea Strategist<small>Chiến lược ý tưởng</small></span></button>
+  <button class="agent" data-role="product"><span class="agent-ico">▣</span><span>Product Manager<small>Quản lý sản phẩm</small></span></button>
+  <button class="agent" data-role="designer"><span class="agent-ico">✧</span><span>Creative Designer<small>Thiết kế sáng tạo</small></span></button>
+  <button class="agent" data-role="developer"><span class="agent-ico">⌘</span><span>Lead Developer<small>Lập trình & kỹ thuật</small></span></button>
+  <button class="agent" data-role="qa"><span class="agent-ico">◈</span><span>QA Tester<small>Kiểm thử chất lượng</small></span></button>
+  <button class="agent" data-role="marketing"><span class="agent-ico">↗</span><span>Marketing Strategist<small>Tiếp thị & tăng trưởng</small></span></button>
+  <button class="agent" data-role="finance"><span class="agent-ico">▤</span><span>Finance Analyst<small>Phân tích tài chính</small></span></button>
+ </div>
+ <div class="history-wrap"><div class="side-label">RECENT CONVERSATIONS</div><div class="history-list" id="historyList"><div class="history-empty">Chưa có cuộc trò chuyện</div></div></div>
+ <div class="sidebar-foot"><div class="connection"><span class="dot" id="dot"></span><span id="status">Đang kiểm tra kết nối...</span></div><div class="foot-note">Gemini API · Cloudflare Worker</div></div>
+</aside>
+<div class="overlay" id="overlay"></div>
+<main class="main">
+ <header class="topbar"><div class="top-left"><button class="mobile-menu" id="menu">☰</button><div class="crumb">Workspace / <b id="activeAgent">CEO Orchestrator</b></div></div><span class="model-chip">✦ GEMINI POWERED</span></header>
+ <section class="workspace">
+  <div class="chat" id="chat"><div id="chatInner"></div></div>
+  <div class="composer-area">
+   <div class="role-row"><span class="role-label">ĐANG LÀM VIỆC VỚI</span><select class="role-select" id="role">
+   <option value="ceo">🧠 CEO Orchestrator</option><option value="researcher">⌕ Market Researcher</option><option value="strategist">♟ Idea Strategist</option><option value="product">▣ Product Manager</option><option value="designer">✧ Creative Designer</option><option value="developer">⌘ Lead Developer</option><option value="qa">◈ QA Tester</option><option value="marketing">↗ Marketing Strategist</option><option value="finance">▤ Finance Analyst</option>
+   </select></div>
+   <div class="composer"><textarea class="prompt" id="prompt" rows="2" placeholder="Giao nhiệm vụ cho đội ngũ NEXA..."></textarea><div class="composer-bottom"><span class="hint">Enter để gửi · Shift + Enter để xuống dòng</span><button class="send" id="send">GỬI NHIỆM VỤ ↗</button></div></div>
+   <div class="gate-row"><input class="gate" id="gate" type="password" autocomplete="off" placeholder="Mã truy cập NEXA"><span class="gate-note">Mã truy cập</span></div>
+  </div>
+ </section>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const API="https://nexa-ai-lab.hiepm4014.workers.dev";
+const STORAGE_KEY="nexa_conversations_v1";
+const roles={ceo:"CEO Orchestrator",researcher:"Market Researcher",strategist:"Idea Strategist",product:"Product Manager",designer:"Creative Designer",developer:"Lead Developer",qa:"QA Tester",marketing:"Marketing Strategist",finance:"Finance Analyst"};
+let history=[],conversations=[],activeId=null,busy=false;
+function makeId(){return "nexa-"+Date.now()+"-"+Math.random().toString(36).slice(2,9)}
+function save(){try{conversations.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));conversations=conversations.slice(0,50);localStorage.setItem(STORAGE_KEY,JSON.stringify(conversations));renderHistory()}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");conversations=Array.isArray(s)?s.filter(c=>c&&Array.isArray(c.messages)):[]}catch(e){conversations=[]}renderHistory()}
+function renderHistory(){const list=$("historyList");list.innerHTML="";if(!conversations.length){list.innerHTML='<div class="history-empty">Chưa có cuộc trò chuyện</div>';return}conversations.forEach(c=>{const b=document.createElement("button");b.className="history-item"+(c.id===activeId?" active":"");b.textContent=c.title||"Cuộc trò chuyện";b.onclick=()=>restore(c.id);list.appendChild(b)})}
+function active(){return conversations.find(c=>c.id===activeId)}
+function update(){const c=active();if(c){c.messages=history.slice();c.updatedAt=Date.now();save()}}
+function create(message,role){const c={id:makeId(),title:message.slice(0,40),messages:[],role,updatedAt:Date.now()};conversations.unshift(c);activeId=c.id;save();return c}
+function scroll(){ $("chat").scrollTop=$("chat").scrollHeight}
+function addMessage(type,name,content){const wrap=document.createElement("div");wrap.className="message "+type;const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=type==="user"?"U":"✦";const body=document.createElement("div");body.className="message-body";const head=document.createElement("div");head.className="message-head";head.textContent=name;const bubble=document.createElement("div");bubble.className="bubble";bubble.textContent=content;body.append(head,bubble);wrap.append(avatar,body);$("chatInner").appendChild(wrap);scroll();return bubble}
+function welcome(){$("chatInner").innerHTML='<div class="welcome" id="welcome"><div class="orb">✦</div><div class="eyebrow">YOUR AI WORKFORCE IS READY</div><h1>Một nhiệm vụ.<br><span class="gradient">Chín trí tuệ.</span></h1><p>Chào mừng đến NEXA AI LAB. Chọn một chuyên gia hoặc bắt đầu với CEO để điều phối công việc cho cả đội.</p><div class="suggestions"><button class="suggestion">✧ Lên ý tưởng kinh doanh mới</button><button class="suggestion">⌘ Xây dựng một website chuyên nghiệp</button><button class="suggestion">⌕ Nghiên cứu thị trường và đối thủ</button><button class="suggestion">▣ Lập kế hoạch phát triển sản phẩm</button></div></div>';document.querySelectorAll(".suggestion").forEach(b=>b.onclick=()=>{$("prompt").value=b.textContent.replace(/^[^\wÀ-ỹ]+/,"").trim();$("prompt").focus()})}
+function syncRole(){const r=$("role").value;$("activeAgent").textContent=roles[r];document.querySelectorAll(".agent").forEach(b=>b.classList.toggle("active",b.dataset.role===r))}
+function restore(id){if(busy)return;const c=conversations.find(x=>x.id===id);if(!c)return;activeId=id;history=c.messages.slice();$("role").value=c.role||"ceo";syncRole();$("chatInner").innerHTML="";if(!history.length)welcome();else history.forEach(m=>addMessage(m.role==="user"?"user":"ai",m.role==="user"?"BẠN":m.agentName||"NEXA",m.content));renderHistory();$("app").classList.remove("sidebar-open")}
+async function health(){try{const r=await fetch(API+"/health"),d=await r.json();if(r.ok&&d.status==="key_configured"){$("dot").className="dot ok";$("status").textContent="ONLINE · "+(d.model||"GEMINI")}else $("status").textContent="API NOT READY"}catch(e){$("status").textContent="SERVER OFFLINE"}}
+async function send(){const message=$("prompt").value.trim(),code=$("gate").value.trim();if(busy||!message)return;if(!code){$("gate").focus();$("status").textContent="CẦN MÃ TRUY CẬP";return}const role=$("role").value,name=roles[role];const w=$("welcome");if(w)w.remove();let c=active();if(!c)c=create(message,role);c.role=role;addMessage("user","BẠN",message);history.push({role:"user",content:message});update();$("prompt").value="";busy=true;$("send").disabled=true;const loading=addMessage("ai",name,"Đang kết nối với chuyên gia NEXA...");
+try{
+const transcript=history.slice(-18).map(m=>(m.role==="user"?"NGƯỜI DÙNG":"NEXA")+": "+m.content).join("\n\n");
+const instruction="Bạn là "+name+", thành viên NEXA AI LAB. Trò chuyện tự nhiên bằng tiếng Việt. Nếu người dùng xưng mày-tao, có thể đáp lại cùng cách xưng hô. Câu hỏi đơn giản trả lời ngắn; việc phức tạp chia bước rõ ràng. Ghi nhớ ngữ cảnh trong lịch sử. Không giả vờ đã thực hiện hành động ngoài khả năng.\n\nLỊCH SỬ:\n"+transcript+"\n\nHãy trả lời tin nhắn mới nhất.";
+const r=await fetch(API+"/api/agent",{method:"POST",headers:{"Content-Type":"application/json","X-NEXA-CODE":code},body:JSON.stringify({role,task:instruction})});
+const d=await r.json();if(!r.ok)throw new Error(d.error||d.message||"HTTP "+r.status);
+const answer=d.output||"AI chưa trả về nội dung.";loading.textContent=answer;history.push({role:"assistant",content:answer,agentName:name});update();
+}catch(e){loading.textContent="Kết nối gặp lỗi: "+e.message+". Tin nhắn của mày vẫn được lưu, thử gửi lại nhé.";update()}
+finally{busy=false;$("send").disabled=false;$("prompt").focus();scroll()}}
+$("send").onclick=send;
+$("prompt").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+$("prompt").addEventListener("input",()=>{$("prompt").style.height="auto";$("prompt").style.height=Math.min($("prompt").scrollHeight,150)+"px"});
+$("newChat").onclick=()=>{if(busy)return;history=[];activeId=null;renderHistory();welcome();$("prompt").focus();$("app").classList.remove("sidebar-open")};
+$("role").onchange=syncRole;
+document.querySelectorAll(".agent").forEach(b=>b.onclick=()=>{$("role").value=b.dataset.role;syncRole();$("app").classList.remove("sidebar-open")});
+$("menu").onclick=()=>$("app").classList.toggle("sidebar-open");
+$("overlay").onclick=()=>$("app").classList.remove("sidebar-open");
+load();welcome();syncRole();health();
 </script>
+</body>
+</html>
