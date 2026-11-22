@@ -165,7 +165,7 @@ $("role").onchange=syncRole;
 document.querySelectorAll(".agent").forEach(b=>b.onclick=()=>{$("role").value=b.dataset.role;syncRole();$("app").classList.remove("sidebar-open")});
 $("menu").onclick=()=>$("app").classList.toggle("sidebar-open");
 $("overlay").onclick=()=>$("app").classList.remove("sidebar-open");
-load();welcome();syncRole();health();
+load();if(conversations.length){restore(conversations[0].id)}else{welcome()}syncRole();health();
 </script>
 </body>
 </html>
