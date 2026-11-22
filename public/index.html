@@ -140,8 +140,26 @@ function save(){try{conversations.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))
 function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");conversations=Array.isArray(s)?s.filter(c=>c&&Array.isArray(c.messages)):[]}catch(e){conversations=[]}renderHistory()}
 function renderHistory(){const list=$("historyList");list.innerHTML="";if(!conversations.length){list.innerHTML='<div class="history-empty">Chưa có cuộc trò chuyện</div>';return}conversations.forEach(c=>{const b=document.createElement("button");b.className="history-item"+(c.id===activeId?" active":"");b.textContent=c.title||"Cuộc trò chuyện";b.onclick=()=>restore(c.id);list.appendChild(b)})}
 function active(){return conversations.find(c=>c.id===activeId)}
-function update(){const c=active();if(c){c.messages=history.slice();c.updatedAt=Date.now();save()}}
-function create(message,role){const c={id:makeId(),title:message.slice(0,40),messages:[],role,updatedAt:Date.now()};conversations.unshift(c);activeId=c.id;save();return c}
+function update(){
+  const c=active();
+  if(!c)return;
+  c.messages=history.slice();
+  c.updatedAt=Date.now();
+  save();
+}
+function create(message,role){
+  const c={
+    id:makeId(),
+    title:message.slice(0,40),
+    messages:[],
+    role,
+    updatedAt:Date.now()
+  };
+  conversations.unshift(c);
+  activeId=c.id;
+  save();
+  return c;
+}
 function scroll(){ $("chat").scrollTop=$("chat").scrollHeight}
 function addMessage(type,name,content){const wrap=document.createElement("div");wrap.className="message "+type;const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=type==="user"?"U":"✦";const body=document.createElement("div");body.className="message-body";const head=document.createElement("div");head.className="message-head";head.textContent=name;const bubble=document.createElement("div");bubble.className="bubble";bubble.textContent=content;body.append(head,bubble);wrap.append(avatar,body);$("chatInner").appendChild(wrap);scroll();return bubble}
 function welcome(){$("chatInner").innerHTML='<div class="welcome" id="welcome"><div class="orb">✦</div><div class="eyebrow">YOUR AI WORKFORCE IS READY</div><h1>Một nhiệm vụ.<br><span class="gradient">Chín trí tuệ.</span></h1><p>Chào mừng đến NEXA AI LAB. Chọn một chuyên gia hoặc bắt đầu với CEO để điều phối công việc cho cả đội.</p><div class="suggestions"><button class="suggestion">✧ Lên ý tưởng kinh doanh mới</button><button class="suggestion">⌘ Xây dựng một website chuyên nghiệp</button><button class="suggestion">⌕ Nghiên cứu thị trường và đối thủ</button><button class="suggestion">▣ Lập kế hoạch phát triển sản phẩm</button></div></div>';document.querySelectorAll(".suggestion").forEach(b=>b.onclick=()=>{$("prompt").value=b.textContent.replace(/^[^\wÀ-ỹ]+/,"").trim();$("prompt").focus()})}
@@ -165,7 +183,14 @@ $("role").onchange=syncRole;
 document.querySelectorAll(".agent").forEach(b=>b.onclick=()=>{$("role").value=b.dataset.role;syncRole();$("app").classList.remove("sidebar-open")});
 $("menu").onclick=()=>$("app").classList.toggle("sidebar-open");
 $("overlay").onclick=()=>$("app").classList.remove("sidebar-open");
-load();if(conversations.length){restore(conversations[0].id)}else{welcome()}syncRole();health();
+load();
+if(conversations.length){
+  restore(conversations[0].id);
+}else{
+  welcome();
+}
+syncRole();
+health();
 </script>
 </body>
 </html>
