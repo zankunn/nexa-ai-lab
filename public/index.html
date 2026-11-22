@@ -1,453 +1,430 @@
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#090910">
-<title>NEXA AI STUDIO</title>
-<style>
-*{box-sizing:border-box}
-:root{
- --bg:#090910;--side:#0e0e18;--panel:#151522;
- --line:#29283a;--text:#f5f3ff;--muted:#89869f;
- --purple:#9b7cff;--blue:#687dff;
-}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer}
-.app{height:100dvh;display:flex;overflow:hidden;background:radial-gradient(ellipse at 60% -20%,#39265c55,transparent 55%),var(--bg)}
-.sidebar{
- width:260px;flex-shrink:0;background:#0d0d16;
- border-right:1px solid var(--line);padding:20px 14px;
- display:flex;flex-direction:column;gap:22px;z-index:5
-}
-.brand{display:flex;align-items:center;gap:11px;padding:3px 5px}
-.logo{
- width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
- background:linear-gradient(135deg,#6f7cff,#b76aff);
- font-weight:900;font-size:23px;box-shadow:0 0 25px #927aff44
-}
-.brand-name{font-weight:850;letter-spacing:1.5px;font-size:16px}
-.brand-sub{font-size:9px;color:#9b8cff;letter-spacing:2px;margin-top:4px}
-.new-chat{
- width:100%;padding:13px;border:1px solid #40375d;border-radius:12px;
- background:linear-gradient(120deg,#28203d,#211c34);
- color:#e9ddff;text-align:left;font-weight:700
-}
-.section-label{font-size:10px;color:#74718a;letter-spacing:2px;font-weight:800;padding:0 7px}
-.nav{display:flex;flex-direction:column;gap:7px}
-.nav-item{
- width:100%;text-align:left;background:transparent;border:1px solid transparent;
- color:#aaa6bd;padding:11px;border-radius:10px;font-size:13px
-}
-.nav-item.active,.nav-item:hover{background:#1b192b;border-color:#302943;color:#fff}
-.sidebar-bottom{margin-top:auto;border-top:1px solid var(--line);padding-top:15px}
-.online{font-size:11px;color:#a5a0ba;padding:8px}
-.dot{display:inline-block;width:7px;height:7px;background:#4de0a1;border-radius:50%;margin-right:7px;box-shadow:0 0 10px #4de0a1}
-.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
-.topbar{
- height:67px;flex-shrink:0;border-bottom:1px solid #242235;
- display:flex;align-items:center;justify-content:space-between;padding:0 25px;
- background:#0b0b13cc;backdrop-filter:blur(18px)
-}
-.top-left{display:flex;align-items:center;gap:12px}
-.menu{display:none;background:transparent;color:white;font-size:21px;border:0}
-.page-title{font-size:14px;font-weight:750}
-.page-sub{font-size:10px;color:var(--muted);margin-top:4px}
-.top-right{display:flex;align-items:center;gap:8px}
-.status{font-size:10px;color:#a5a0ba}
-.role-wrap{padding:15px 25px 0}
-.role-select{
- max-width:250px;background:#171522;border:1px solid #383149;
- color:#e8e2ff;padding:11px 13px;border-radius:11px;width:100%;outline:none
-}
-.chat{
- flex:1;min-height:0;overflow-y:auto;padding:35px 25px 20px;
- scroll-behavior:smooth
-}
-.chat-inner{max-width:790px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
-.welcome{margin:auto;text-align:center;padding:30px 10px}
-.welcome-icon{
- width:65px;height:65px;margin:0 auto 20px;border-radius:22px;
- display:grid;place-items:center;font-size:30px;
- background:linear-gradient(135deg,#302456,#252b59);
- border:1px solid #54447d;box-shadow:0 0 50px #8b6aff20
-}
-.welcome h1{font-size:34px;letter-spacing:-1.5px;margin:0 0 12px}
-.gradient{
- background:linear-gradient(90deg,#9e8aff,#70a6ff);
- color:transparent;background-clip:text
-}
-.welcome p{font-size:14px;color:#918da7;line-height:1.7;max-width:420px;margin:auto}
-.suggestions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:27px auto 0;max-width:540px}
-.suggestion{
- background:#14131f;border:1px solid #302b40;border-radius:13px;
- color:#c6c0d8;padding:13px;text-align:left;font-size:12px;line-height:1.5
-}
-.suggestion:hover{border-color:#8872d5;background:#1c192b}
-.message{display:flex;flex-direction:column;gap:8px;margin:0 0 25px}
-.message-head{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:800;letter-spacing:.8px;color:#a99aff}
-.avatar{
- width:27px;height:27px;border-radius:9px;display:grid;place-items:center;
- background:linear-gradient(135deg,#6759ac,#3e4e91);font-size:13px;color:white
-}
-.user .message-head{justify-content:flex-end;color:#9bb8ff}
-.user .avatar{background:linear-gradient(135deg,#4265a8,#6955ae)}
-.bubble{
- max-width:90%;padding:15px 17px;border-radius:16px;
- white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:14px
-}
-.user{align-items:flex-end}
-.user .bubble{
- background:linear-gradient(130deg,#51468b,#3c4e87);
- border:1px solid #7164ae;border-bottom-right-radius:5px
-}
-.ai .bubble{
- background:#171622;border:1px solid #302d41;
- color:#eeeafa;border-bottom-left-radius:5px
-}
-.composer-area{padding:12px 22px 20px}
-.composer{max-width:790px;margin:auto}
-.input-shell{
- background:#151420;border:1px solid #39334d;border-radius:19px;
- padding:12px 13px 10px;box-shadow:0 12px 40px #0005;
- transition:.2s
-}
-.input-shell:focus-within{border-color:#8975d2;box-shadow:0 0 0 3px #8b72e51a}
-#prompt{
- display:block;width:100%;min-height:48px;max-height:150px;resize:none;
- border:0;outline:0;background:transparent;color:white;padding:9px;
- font-size:14px;line-height:1.6
-}
-#prompt::placeholder{color:#77738d}
-.input-actions{display:flex;align-items:center;justify-content:space-between;padding:4px 3px 0}
-.input-note{font-size:10px;color:#77738d}
-.send{
- width:40px;height:38px;border:0;border-radius:12px;
- background:linear-gradient(135deg,#8d75f3,#6489f4);
- color:white;font-size:18px;font-weight:800
-}
-.send:disabled{opacity:.45}
-.code-row{max-width:790px;margin:9px auto 0}
-#gate{
- width:100%;background:#11111b;border:1px solid #272537;
- color:white;border-radius:10px;padding:10px 13px;font-size:11px;outline:none
-}
-.disclaimer{text-align:center;font-size:10px;color:#656178;margin-top:10px}
-.history-empty{font-size:11px;color:#77738d;padding:10px 7px}
-.mobile-overlay{display:none}
-@media(max-width:700px){
- .sidebar{
-  position:fixed;left:0;top:0;bottom:0;width:270px;
-  transform:translateX(-105%);transition:transform .25s;
-  box-shadow:15px 0 50px #0008
- }
- body.sidebar-open .sidebar{transform:translateX(0)}
- .mobile-overlay{
-  position:fixed;inset:0;background:#0009;z-index:4
- }
- body.sidebar-open .mobile-overlay{display:block}
- .menu{display:block}
- .topbar{height:60px;padding:0 13px}
- .role-wrap{padding:12px 13px 0}
- .role-select{max-width:100%}
- .chat{padding:20px 13px}
- .welcome h1{font-size:28px}
- .suggestions{grid-template-columns:1fr}
- .composer-area{padding:8px 10px 13px}
- .bubble{max-width:96%;font-size:13px}
- .status{font-size:9px}
-}
-</style>
-</head>
-<body>
-<div class="app">
- <aside class="sidebar" id="sidebar">
-  <div class="brand">
-   <div class="logo">N</div>
-   <div>
-    <div class="brand-name">NEXA AI</div>
-    <div class="brand-sub">INTELLIGENCE LAB</div>
-   </div>
-  </div>
-  <button class="new-chat" id="newChat">＋ &nbsp; Cuộc trò chuyện mới</button>
-  <div>
-   <div class="section-label">WORKSPACE</div>
-   <div class="nav">
-    <button class="nav-item active">✦ &nbsp; NEXA Chat</button>
-    <button class="nav-item" id="focusRole">◈ &nbsp; AI chuyên gia</button>
-   </div>
-  </div>
-  <div>
-   <div class="section-label">LỊCH SỬ GẦN ĐÂY</div>
-   <div id="historyList" class="history-empty">Chưa có cuộc trò chuyện</div>
-  </div>
-  <div class="sidebar-bottom">
-   <div class="online"><span class="dot" id="dot"></span><span id="status">Đang kết nối...</span></div>
-   <div class="section-label">NEXA AI LAB · V1.0</div>
-  </div>
- </aside>
+const $ = id => document.getElementById(id);
+const API = "https://nexa-ai-lab.hiepm4014.workers.dev";
+const STORAGE_KEY = "nexa_conversations_v1";
+const MAX_CHATS = 50;
 
- <div class="mobile-overlay" id="overlay"></div>
+let history = [];
+let conversations = [];
+let activeId = null;
+let busy = false;
 
- <section class="main">
-  <header class="topbar">
-   <div class="top-left">
-    <button class="menu" id="menu">☰</button>
-    <div>
-     <div class="page-title">NEXA Conversation</div>
-     <div class="page-sub">Your intelligent workspace</div>
-    </div>
-   </div>
-   <div class="top-right"><span class="status">● AI WORKSPACE</span></div>
-  </header>
-
-  <div class="role-wrap">
-   <select id="role" class="role-select">
-    <option value="ceo">🧠 CEO Orchestrator</option>
-    <option value="researcher">🔎 Market Researcher</option>
-    <option value="strategist">♟️ Idea Strategist</option>
-    <option value="product">📦 Product Manager</option>
-    <option value="designer">🎨 Designer</option>
-    <option value="developer">💻 Developer</option>
-    <option value="qa">🧪 QA Tester</option>
-    <option value="marketing">📣 Marketing Strategist</option>
-    <option value="finance">📊 Finance Analyst</option>
-   </select>
-  </div>
-
-  <div class="chat" id="chat">
-   <div class="chat-inner" id="chatInner">
-    <div class="welcome" id="welcome">
-     <div class="welcome-icon">✦</div>
-     <h1>Chào mừng đến <span class="gradient">NEXA AI</span></h1>
-     <p>Một không gian làm việc. Chín trí tuệ nhân tạo. Hãy bắt đầu bằng ý tưởng của bạn.</p>
-     <div class="suggestions">
-      <button class="suggestion">✧ Lên ý tưởng kinh doanh mới</button>
-      <button class="suggestion">⌘ Tạo một website chuyên nghiệp</button>
-      <button class="suggestion">✦ Nghiên cứu thị trường</button>
-      <button class="suggestion">◇ Xây dựng kế hoạch sản phẩm</button>
-     </div>
-    </div>
-   </div>
-  </div>
-
-  <div class="composer-area">
-   <div class="composer">
-    <div class="input-shell">
-     <textarea id="prompt" placeholder="Nhắn tin cho NEXA..." rows="1"></textarea>
-     <div class="input-actions">
-      <span class="input-note">Shift + Enter để xuống dòng</span>
-      <button class="send" id="send" aria-label="Gửi">↑</button>
-     </div>
-    </div>
-   </div>
-   <div class="code-row">
-    <input id="gate" type="password" autocomplete="off" placeholder="Mã truy cập NEXA">
-   </div>
-   <div class="disclaimer">NEXA có thể mắc lỗi. Hãy kiểm tra thông tin quan trọng.</div>
-  </div>
- </section>
-</div>
-
-<script>
-const $=id=>document.getElementById(id);
-const API="https://nexa-ai-lab.hiepm4014.workers.dev";
-let history=[];
-let conversations=[];
-let activeTitle=null;
-let busy=false;
-
-const STORAGE_KEY="nexa_conversations_v1";
-
-function saveConversations(){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(conversations));
+// Tạo ID riêng cho từng cuộc trò chuyện
+function makeId() {
+  return "nexa-" + Date.now() + "-" +
+    Math.random().toString(36).slice(2, 9);
 }
 
-function loadConversations(){
-  try{
-    conversations=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-  }catch(e){
-    conversations=[];
+// Lưu lịch sử vào trình duyệt
+function saveConversations() {
+  try {
+    conversations.sort(
+      (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
+    );
+
+    conversations = conversations.slice(0, MAX_CHATS);
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(conversations)
+    );
+
+    renderHistoryList();
+    return true;
+  } catch (error) {
+    $("status").textContent = "LỖI LƯU LỊCH SỬ";
+    return false;
   }
-  renderHistoryList();
 }
 
-function renderHistoryList(){
-  const list=$("historyList");
-  list.innerHTML="";
-  if(!conversations.length){
-    list.className="history-empty";
-    list.textContent="Chưa có cuộc trò chuyện";
+// Tải lịch sử đã lưu
+function loadConversations() {
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) || "[]"
+    );
+
+    conversations = Array.isArray(saved)
+      ? saved
+          .filter(c => c && Array.isArray(c.messages))
+          .map(c => ({
+            id: c.id || makeId(),
+            title: c.title || "Cuộc trò chuyện",
+            messages: c.messages,
+            role: c.role || "ceo",
+            updatedAt: c.updatedAt || Date.now()
+          }))
+      : [];
+
+    saveConversations();
+  } catch (error) {
+    conversations = [];
+    renderHistoryList();
+  }
+}
+
+// Hiển thị danh sách lịch sử
+function renderHistoryList() {
+  const list = $("historyList");
+  list.innerHTML = "";
+
+  if (!conversations.length) {
+    list.className = "history-empty";
+    list.textContent = "Chưa có cuộc trò chuyện";
     return;
   }
-  list.className="";
-  conversations.forEach(c=>{
-    const b=document.createElement("button");
-    b.className="nav-item";
-    b.textContent="◦ "+c.title.slice(0,28);
-    b.onclick=()=>restoreConversation(c.title);
-    list.appendChild(b);
+
+  list.className = "";
+
+  conversations.forEach(c => {
+    const button = document.createElement("button");
+
+    button.className = "nav-item" +
+      (c.id === activeId ? " active" : "");
+
+    button.textContent = "◦ " + c.title.slice(0, 28);
+    button.onclick = () => restoreConversation(c.id);
+
+    list.appendChild(button);
   });
 }
-function scrollBottom(){
- $("chat").scrollTop=$("chat").scrollHeight;
+
+function getActiveConversation() {
+  return conversations.find(c => c.id === activeId);
 }
-function addMessage(type,name,text){
- const wrap=document.createElement("div");
- wrap.className="message "+type;
- const head=document.createElement("div");
- head.className="message-head";
- const avatar=document.createElement("span");
- avatar.className="avatar";
- avatar.textContent=type==="user"?"U":"✦";
- const label=document.createElement("span");
- label.textContent=name;
- if(type==="user")head.append(label,avatar);
- else head.append(avatar,label);
- const bubble=document.createElement("div");
- bubble.className="bubble";
- bubble.textContent=text;
- wrap.append(head,bubble);
- $("chatInner").appendChild(wrap);
- scrollBottom();
- return bubble;
+
+// Đồng bộ hội thoại hiện tại vào bộ nhớ
+function updateActiveConversation() {
+  const conversation = getActiveConversation();
+  if (!conversation) return;
+
+  conversation.messages = history.slice();
+  conversation.updatedAt = Date.now();
+
+  saveConversations();
 }
-function clearWelcome(){
- const w=$("welcome");
- if(w)w.remove();
-}
-function addHistory(label){
- if(!$("historyList").querySelector("button")){
-  $("historyList").innerHTML="";
-  $("historyList").className="";
- }
- const b=document.createElement("button");
- b.className="nav-item";
- b.textContent="◦ "+label.slice(0,28);
- b.onclick=()=>restoreConversation(label);
- $("historyList").prepend(b);
-}
-function restoreConversation(label){
- const c=conversations.find(x=>x.title===label);
- if(!c||busy)return;
- history=c.messages.slice();
- $("chatInner").innerHTML="";
- if(!history.length){showWelcome();return;}
- history.forEach(m=>addMessage(m.role==="user"?"user":"ai",m.role==="user"?"BẠN":"NEXA",m.content));
- document.body.classList.remove("sidebar-open");
-}
-function showWelcome(){
- $("chatInner").innerHTML=`
- <div class="welcome" id="welcome">
- <div class="welcome-icon">✦</div>
- <h1>Chào mừng đến <span class="gradient">NEXA AI</span></h1>
- <p>Một không gian làm việc. Chín trí tuệ nhân tạo. Hãy bắt đầu bằng ý tưởng của bạn.</p>
- <div class="suggestions">
- <button class="suggestion">✧ Lên ý tưởng kinh doanh mới</button>
- <button class="suggestion">⌘ Tạo một website chuyên nghiệp</button>
- <button class="suggestion">✦ Nghiên cứu thị trường</button>
- <button class="suggestion">◇ Xây dựng kế hoạch sản phẩm</button>
- </div></div>`;
- bindSuggestions();
-}
-function bindSuggestions(){
- document.querySelectorAll(".suggestion").forEach(b=>{
-  b.onclick=()=>{
-   $("prompt").value=b.textContent.replace(/^[^\wÀ-ỹ]+/,"").trim();
-   $("prompt").focus();
+
+// Tạo cuộc trò chuyện mới
+function createConversation(message, role) {
+  const conversation = {
+    id: makeId(),
+    title: message.slice(0, 28),
+    messages: [],
+    role: role,
+    updatedAt: Date.now()
   };
- });
+
+  conversations.unshift(conversation);
+  activeId = conversation.id;
+
+  saveConversations();
+  return conversation;
 }
-async function checkHealth(){
- try{
-  const r=await fetch(API+"/health");
-  const d=await r.json();
-  if(r.ok&&d.status==="key_configured"){
-   $("dot").className="dot";
-   $("status").textContent="ONLINE · "+(d.model||"GEMINI");
-  }else $("status").textContent="API NOT READY";
- }catch(e){$("status").textContent="SERVER OFFLINE";}
+
+function scrollBottom() {
+  $("chat").scrollTop = $("chat").scrollHeight;
 }
-async function sendMessage(){
- const message=$("prompt").value.trim();
- const code=$("gate").value.trim();
- if(busy||!message)return;
- if(!code){alert("Hãy nhập mã truy cập NEXA.");$("gate").focus();return;}
- clearWelcome();
- const role=$("role").value;
- const roleName=$("role").selectedOptions[0].textContent;
- addMessage("user","BẠN",message);
- history.push({role:"user",content:message});
- if(history.length===1){
-  const title=message.slice(0,28);
-  conversations.unshift({title,messages:history});
-  addHistory(title);
- }
- $("prompt").value="";
- $("prompt").style.height="auto";
- busy=true;
- $("send").disabled=true;
- const loading=addMessage("ai",roleName,"NEXA đang suy nghĩ...");
- try{
-  const conversation=history.slice(-12).map(item=>
-   (item.role==="user"?"NGƯỜI DÙNG":"NEXA")+": "+item.content
-  ).join("\n\n");
-  const task="Bạn là "+roleName+" trong đội ngũ NEXA AI LAB. "+
-   "Trò chuyện tự nhiên bằng tiếng Việt, duy trì ngữ cảnh hội thoại. "+
-   "Trả lời rõ ràng, hữu ích, chủ động hỗ trợ người dùng hoàn thành công việc.\n\n"+
-   "LỊCH SỬ HỘI THOẠI:\n"+conversation+
-   "\n\nHãy trả lời tin nhắn mới nhất.";
-  const r=await fetch(API+"/api/agent",{
-   method:"POST",
-   headers:{"Content-Type":"application/json","X-NEXA-CODE":code},
-   body:JSON.stringify({role,task})
-  });
-  const d=await r.json();
-  if(!r.ok)throw new Error(d.error||d.message||"HTTP "+r.status);
-  const answer=d.output||"AI chưa trả về nội dung.";
-  loading.textContent=answer;
-  history.push({role:"assistant",content:answer});
-  if(conversations.length)conversations[0].messages=history.slice();
- }catch(e){
-  loading.textContent="Lỗi: "+e.message;
-  history.pop();
-  if(conversations.length&&history.length===0)conversations.shift();
- }finally{
-  busy=false;
-  $("send").disabled=false;
-  $("prompt").focus();
+
+// Hiển thị tin nhắn
+function addMessage(type, name, content) {
+  const wrap = document.createElement("div");
+  wrap.className = "message " + type;
+
+  const head = document.createElement("div");
+  head.className = "message-head";
+
+  const avatar = document.createElement("span");
+  avatar.className = "avatar";
+  avatar.textContent = type === "user" ? "U" : "✦";
+
+  const label = document.createElement("span");
+  label.textContent = name;
+
+  if (type === "user") {
+    head.append(label, avatar);
+  } else {
+    head.append(avatar, label);
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = content;
+
+  wrap.append(head, bubble);
+  $("chatInner").appendChild(wrap);
+
   scrollBottom();
- }
+  return bubble;
 }
-$("send").onclick=sendMessage;
-$("prompt").addEventListener("keydown",e=>{
- if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}
+
+function clearWelcome() {
+  const welcome = $("welcome");
+  if (welcome) welcome.remove();
+}
+
+// Mở lại một cuộc trò chuyện cũ
+function restoreConversation(id) {
+  if (busy) return;
+
+  const conversation = conversations.find(c => c.id === id);
+  if (!conversation) return;
+
+  activeId = conversation.id;
+  history = conversation.messages.slice();
+
+  $("role").value = conversation.role || "ceo";
+  $("chatInner").innerHTML = "";
+
+  if (!history.length) {
+    showWelcome();
+  } else {
+    history.forEach(message => {
+      const isUser = message.role === "user";
+
+      addMessage(
+        isUser ? "user" : "ai",
+        isUser ? "BẠN" : (message.agentName || "NEXA"),
+        message.content
+      );
+    });
+  }
+
+  renderHistoryList();
+  document.body.classList.remove("sidebar-open");
+}
+
+// Màn hình chào
+function showWelcome() {
+  $("chatInner").innerHTML = `
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">✦</div>
+      <h1>Chào mừng đến <span class="gradient">NEXA AI</span></h1>
+      <p>Một không gian làm việc. Chín trí tuệ nhân tạo. Hãy bắt đầu bằng ý tưởng của bạn.</p>
+      <div class="suggestions">
+        <button class="suggestion">✧ Lên ý tưởng kinh doanh mới</button>
+        <button class="suggestion">⌘ Tạo một website chuyên nghiệp</button>
+        <button class="suggestion">✦ Nghiên cứu thị trường</button>
+        <button class="suggestion">◇ Xây dựng kế hoạch sản phẩm</button>
+      </div>
+    </div>`;
+
+  bindSuggestions();
+}
+
+function bindSuggestions() {
+  document.querySelectorAll(".suggestion").forEach(button => {
+    button.onclick = () => {
+      $("prompt").value = button.textContent
+        .replace(/^[^\wÀ-ỹ]+/, "")
+        .trim();
+
+      $("prompt").focus();
+    };
+  });
+}
+
+// Kiểm tra kết nối Gemini
+async function checkHealth() {
+  try {
+    const response = await fetch(API + "/health");
+    const data = await response.json();
+
+    if (response.ok && data.status === "key_configured") {
+      $("dot").className = "dot";
+      $("status").textContent =
+        "ONLINE · " + (data.model || "GEMINI");
+    } else {
+      $("status").textContent = "API NOT READY";
+    }
+  } catch (error) {
+    $("status").textContent = "SERVER OFFLINE";
+  }
+}
+
+// Gửi tin nhắn
+async function sendMessage() {
+  const message = $("prompt").value.trim();
+  const code = $("gate").value.trim();
+
+  if (busy || !message) return;
+
+  if (!code) {
+    alert("Hãy nhập mã truy cập NEXA.");
+    $("gate").focus();
+    return;
+  }
+
+  const role = $("role").value;
+  const roleName = $("role").selectedOptions[0].textContent;
+
+  clearWelcome();
+
+  let conversation = getActiveConversation();
+
+  if (!conversation) {
+    conversation = createConversation(message, role);
+  }
+
+  conversation.role = role;
+
+  // Lưu tin nhắn người dùng ngay lập tức
+  addMessage("user", "BẠN", message);
+
+  history.push({
+    role: "user",
+    content: message
+  });
+
+  updateActiveConversation();
+
+  $("prompt").value = "";
+  $("prompt").style.height = "auto";
+
+  busy = true;
+  $("send").disabled = true;
+
+  const loading = addMessage(
+    "ai",
+    roleName,
+    "Để tao suy nghĩ một chút nhé..."
+  );
+
+  try {
+    const conversationText = history
+      .slice(-16)
+      .map(item =>
+        (item.role === "user" ? "NGƯỜI DÙNG" : "NEXA")
+        + ": " + item.content
+      )
+      .join("\n\n");
+
+    // Chỉ dẫn giao tiếp tự nhiên hơn cho chatbot
+    const personality = `
+Bạn là ${roleName}, một thành viên trong đội ngũ NEXA AI LAB.
+
+PHONG CÁCH GIAO TIẾP:
+- Trò chuyện tự nhiên, thân thiện, linh hoạt như một người cộng sự.
+- Không trả lời cứng nhắc hoặc lặp đi lặp lại cùng một kiểu mở đầu.
+- Nếu người dùng nói chuyện thân mật, hãy đáp lại gần gũi và phù hợp.
+- Nếu người dùng dùng cách xưng hô mày-tao, có thể dùng cách xưng hô đó.
+- Không cần lúc nào cũng trình bày bằng tiêu đề và danh sách.
+- Câu hỏi đơn giản thì trả lời ngắn gọn, đi thẳng vào ý chính.
+- Việc phức tạp thì giải thích rõ ràng, chia thành từng bước.
+- Biết tiếp nối nội dung những lần trò chuyện trước.
+- Không hỏi lại những điều người dùng đã cung cấp.
+- Chỉ hỏi thêm khi thực sự thiếu thông tin quan trọng.
+- Chủ động đề xuất bước tiếp theo khi điều đó hữu ích.
+- Có thể dùng chút hài hước đúng lúc, nhưng không lạm dụng emoji.
+- Không tự nhận đã thực hiện một việc nếu thực tế chưa làm.
+- Nếu không biết, hãy nói rõ thay vì tự bịa thông tin.
+
+VAI TRÒ:
+Thực hiện đúng chuyên môn của ${roleName}, phối hợp tư duy với mục tiêu chung của NEXA AI LAB.
+
+LỊCH SỬ HỘI THOẠI:
+${conversationText}
+
+Hãy trả lời tin nhắn mới nhất một cách tự nhiên, hữu ích và đúng ngữ cảnh.
+`;
+
+    const response = await fetch(API + "/api/agent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-NEXA-CODE": code
+      },
+      body: JSON.stringify({
+        role: role,
+        task: personality
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || data.message || "HTTP " + response.status
+      );
+    }
+
+    const answer = data.output || "AI chưa trả về nội dung.";
+
+    loading.textContent = answer;
+
+    history.push({
+      role: "assistant",
+      content: answer,
+      agentName: roleName
+    });
+
+    // Lưu câu trả lời của AI ngay sau khi nhận được
+    updateActiveConversation();
+
+  } catch (error) {
+    loading.textContent =
+      "Tao chưa trả lời được vì kết nối gặp lỗi: " +
+      error.message +
+      ". Mày có thể thử gửi lại nhé.";
+
+    // Giữ lại tin nhắn người dùng để không mất nội dung
+    updateActiveConversation();
+
+  } finally {
+    busy = false;
+    $("send").disabled = false;
+    $("prompt").focus();
+    scrollBottom();
+  }
+}
+
+// Nút gửi
+$("send").onclick = sendMessage;
+
+// Enter để gửi, Shift + Enter để xuống dòng
+$("prompt").addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
 });
-$("prompt").addEventListener("input",()=>{
- $("prompt").style.height="auto";
- $("prompt").style.height=Math.min($("prompt").scrollHeight,150)+"px";
+
+// Tự điều chỉnh chiều cao ô nhập
+$("prompt").addEventListener("input", () => {
+  $("prompt").style.height = "auto";
+  $("prompt").style.height =
+    Math.min($("prompt").scrollHeight, 150) + "px";
 });
-$("newChat").onclick=()=>{
- if(busy)return;
- if(history.length){
-  const title=history[0].content.slice(0,28);
-  if(!conversations.some(c=>c.title===title))conversations.unshift({title,messages:history.slice()});
- }
- history=[];
- showWelcome();
- $("prompt").focus();
- document.body.classList.remove("sidebar-open");
+
+// Bắt đầu cuộc trò chuyện mới, không xóa lịch sử cũ
+$("newChat").onclick = () => {
+  if (busy) return;
+
+  history = [];
+  activeId = null;
+
+  renderHistoryList();
+  showWelcome();
+
+  $("prompt").focus();
+  document.body.classList.remove("sidebar-open");
 };
-$("menu").onclick=()=>document.body.classList.toggle("sidebar-open");
-$("overlay").onclick=()=>document.body.classList.remove("sidebar-open");
-$("focusRole").onclick=()=>{
- document.body.classList.remove("sidebar-open");
- $("role").focus();
+
+// Menu điện thoại
+$("menu").onclick = () => {
+  document.body.classList.toggle("sidebar-open");
 };
+
+$("overlay").onclick = () => {
+  document.body.classList.remove("sidebar-open");
+};
+
+$("focusRole").onclick = () => {
+  document.body.classList.remove("sidebar-open");
+  $("role").focus();
+};
+
+// Khởi động NEXA
+loadConversations();
 bindSuggestions();
 checkHealth();
 </script>
-</body>
-</html>
